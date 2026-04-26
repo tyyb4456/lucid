@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+node_modules/
+dist/
+data/screenshots/
+*.log
+.conda/
+venv/
+.venv/
+*.egg-info/
+build/
