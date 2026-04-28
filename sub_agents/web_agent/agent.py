@@ -6,7 +6,7 @@ from langchain.agents.middleware import (
     ClearToolUsesEdit
 )
 
-from tools import (
+from .web_tools import (
     search_web,
     open_url,
     download_file,
@@ -28,6 +28,9 @@ tools = [
     open_maps_location
 ]
 
+from dotenv import load_dotenv
+load_dotenv()
+
 SYSTEM_PROMPT = """
 You are LUCID, an expert Web & Network agent capable of browsing the internet, downloading files, and performing network diagnostics.
 
@@ -46,8 +49,7 @@ middleware=[
             "open_url": {"allowed_decisions": ["approve", "reject"]},
         }
     ),
-    ModelFallbackMiddleware("gpt-5.4-mini", "claude-3-5-sonnet-20241022"),
-    TodoListMiddleware(),
+
     ContextEditingMiddleware(edits=[ClearToolUsesEdit(trigger=100000, keep=3)]),
 ]
 
@@ -57,6 +59,8 @@ def web_agent():
         "description": "Web Agent for internet browsing, searching, and network tools",
         "system_prompt": SYSTEM_PROMPT,
         "tools": tools,
-        "model": "gpt-5.4",
-        "middleware": middleware,
+        "interrupt_on" : {
+            "download_file": {"allowed_decisions": ["approve", "reject"]},
+            "open_url": {"allowed_decisions": ["approve", "reject"]},
+        }
     }

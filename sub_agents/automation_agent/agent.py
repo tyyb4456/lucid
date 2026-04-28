@@ -6,7 +6,7 @@ from langchain.agents.middleware import (
     ClearToolUsesEdit
 )
 
-from tools import (
+from .automation_tools import (
     click_mouse,
     move_mouse,
     get_mouse_position,
@@ -81,28 +81,7 @@ Think step-by-step before acting. For every task:
 - If `find_on_screen` fails, take a screenshot and ask the user to confirm the UI state
 """
 
-middleware=[
-    HumanInTheLoopMiddleware(
-        interrupt_on={
-            "click_mouse": {"allowed_decisions": ["approve", "reject"]},
-            "type_text": {"allowed_decisions": ["approve", "reject"]},
-            "press_key": {"allowed_decisions": ["approve", "reject"]},
-        }
-    ),
-    ModelFallbackMiddleware(
-        "gpt-5.4-mini",
-        "claude-3-5-sonnet-20241022",
-    ),
-    TodoListMiddleware(),
-    ContextEditingMiddleware(
-        edits=[
-            ClearToolUsesEdit(
-                trigger=100000,
-                keep=3,
-            ),
-        ],
-    ),
-]
+
 
 def automation_agent():
     return {
@@ -110,6 +89,9 @@ def automation_agent():
         "description": "Automation Agent for GUI, keyboard and mouse control",
         "system_prompt": SYSTEM_PROMPT,
         "tools": tools,
-        "model": "gpt-5.4",
-        "middleware": middleware,
+        "interrupt_on": {
+            "click_mouse": {"allowed_decisions": ["approve", "reject"]},
+            "type_text": {"allowed_decisions": ["approve", "reject"]},
+            "press_key": {"allowed_decisions": ["approve", "reject"]},
+        }
     }

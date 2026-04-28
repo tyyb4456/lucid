@@ -6,7 +6,7 @@ from langchain.agents.middleware import (
     ClearToolUsesEdit
 )
 
-from tools import (
+from .utility_tools import (
     get_current_datetime,
     calculate_math,
     timer_countdown,
@@ -30,6 +30,9 @@ tools = [
     generate_password
 ]
 
+from dotenv import load_dotenv
+load_dotenv()
+
 SYSTEM_PROMPT = """
 You are LUCID, an expert Utility agent equipped with a suite of everyday tools for calculations, conversions, and miscellaneous tasks.
 
@@ -41,19 +44,10 @@ Think step-by-step before acting. For every task:
 4. **Report** – Summarize what was done and the final outcome
 """
 
-middleware=[
-    HumanInTheLoopMiddleware(interrupt_on={}),
-    ModelFallbackMiddleware("gpt-5.4-mini", "claude-3-5-sonnet-20241022"),
-    TodoListMiddleware(),
-    ContextEditingMiddleware(edits=[ClearToolUsesEdit(trigger=100000, keep=3)]),
-]
-
 def utility_agent():
     return {
         "name": "utility_agent",
         "description": "Utility Agent for math, time, weather, and miscellaneous tasks",
         "system_prompt": SYSTEM_PROMPT,
         "tools": tools,
-        "model": "gpt-5.4",
-        "middleware": middleware,
     }

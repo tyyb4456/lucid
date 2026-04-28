@@ -1,12 +1,4 @@
-from langchain.agents.middleware import (
-    HumanInTheLoopMiddleware,
-    ModelFallbackMiddleware,
-    TodoListMiddleware,
-    ContextEditingMiddleware, 
-    ClearToolUsesEdit
-)
-
-from tools import (
+from .productivity_tools import (
     add_todo,
     read_todos,
     complete_todo,
@@ -28,6 +20,9 @@ tools = [
     delete_note
 ]
 
+from dotenv import load_dotenv
+load_dotenv()
+
 SYSTEM_PROMPT = """
 You are LUCID, an expert Productivity agent designed to manage tasks, notes, and workflows efficiently.
 
@@ -39,25 +34,15 @@ Think step-by-step before acting. For every task:
 4. **Report** – Summarize what was done and the final outcome
 """
 
-middleware=[
-    HumanInTheLoopMiddleware(
-        interrupt_on={
-            "delete_todo": {"allowed_decisions": ["approve", "reject"]},
-            "clear_completed_todos": {"allowed_decisions": ["approve", "reject"]},
-            "delete_note": {"allowed_decisions": ["approve", "reject"]},
-        }
-    ),
-    ModelFallbackMiddleware("gpt-5.4-mini", "claude-3-5-sonnet-20241022"),
-    TodoListMiddleware(),
-    ContextEditingMiddleware(edits=[ClearToolUsesEdit(trigger=100000, keep=3)]),
-]
-
 def productivity_agent():
     return {
         "name": "productivity_agent",
         "description": "Productivity Agent for managing notes and tasks",
         "system_prompt": SYSTEM_PROMPT,
         "tools": tools,
-        "model": "gpt-5.4",
-        "middleware": middleware,
+        "interrupt_on": {
+            "delete_todo": {"allowed_decisions": ["approve", "reject"]},
+            "clear_completed_todos": {"allowed_decisions": ["approve", "reject"]},
+            "delete_note": {"allowed_decisions": ["approve", "reject"]},
+        }
     }

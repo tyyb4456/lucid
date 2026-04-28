@@ -7,7 +7,7 @@ from langchain.agents.middleware import (
     ClearToolUsesEdit
 )
 
-from tools import (
+from .system_tools import (
     execute_command,
     open_any_application,
     kill_process,
@@ -26,6 +26,9 @@ tools = [
     get_system_info,
     manage_window
 ]
+
+from dotenv import load_dotenv
+load_dotenv()
 
 SYSTEM_PROMPT = """
 You are LUCID, an expert System Control agent with full administrative power over the user's operating system, processes, and applications.
@@ -77,53 +80,35 @@ For each task, structure your response as:
 If a task fails or is ambiguous, explain clearly what went wrong and what info you need to proceed.
 """
 
-middleware=[
-    HumanInTheLoopMiddleware(
-        interrupt_on={
-            "execute_command": {
-                "allowed_decisions": ["approve", "reject"],
-            },
-            "open_any_application": {
-                "allowed_decisions": ["approve", "reject"],
-            },
-            "kill_process": {
-                "allowed_decisions": ["approve", "reject"],
-            },
-            "list_running_processes": {
-                "allowed_decisions": ["approve", "reject"],
-            },
-            "system_power_control": {
-                "allowed_decisions": ["approve", "reject"],
-            },
-            "get_system_info": {
-                "allowed_decisions": ["approve"],
-            },
-            "manage_window": {
-                "allowed_decisions": ["approve"],
-            },
-        }
-    ),
-    ModelFallbackMiddleware(
-        "gpt-5.4-mini",
-        "claude-3-5-sonnet-20241022",
-    ),
-    TodoListMiddleware(),
-            ContextEditingMiddleware(
-        edits=[
-            ClearToolUsesEdit(
-                trigger=100000,
-                keep=3,
-            ),
-        ],
-    ),
-]
 
 def system_agent():
     return {
-                "name": "system_agent",
-                "description": "System Agent",
-                "system_prompt": SYSTEM_PROMPT,
-                "tools": tools,
-                "model": "gpt-5.4",
-                "middleware": middleware,
+            "name": "system_agent",
+            "description": "System Agent",
+            "system_prompt": SYSTEM_PROMPT,
+            "tools": tools,
+            "interrupt_on": {
+                "execute_command": {
+                    "allowed_decisions": ["approve", "reject"],
+                },
+                "open_any_application": {
+                    "allowed_decisions": ["approve", "reject"],
+                },
+                "kill_process": {
+                    "allowed_decisions": ["approve", "reject"],
+                },
+                "list_running_processes": {
+                    "allowed_decisions": ["approve", "reject"],
+                },
+                "system_power_control": {
+                    "allowed_decisions": ["approve", "reject"],
+                },
+                "get_system_info": {
+                    "allowed_decisions": ["approve"],
+                },
+                "manage_window": {
+                    "allowed_decisions": ["approve"],
+                },
             }
+
+        }
