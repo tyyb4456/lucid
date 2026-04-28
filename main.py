@@ -14,27 +14,14 @@ Flow:
 """
 
 import sys
-from typing import Any
-
 from langgraph.types import Command
-
-# ── The compiled LangGraph agent (must expose .invoke / .stream with interrupt support) ──
 from main_agent import agent
-
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Core invocation loop
 # ─────────────────────────────────────────────────────────────────────────────
 
 def run_with_interrupts(user_input: str, thread_id: str = "default") -> str:
-    """
-    Invoke the main agent and handle any number of HumanInTheLoop interrupts
-    before returning the final answer text.
 
-    LangGraph surfaces interrupts as GraphInterrupt exceptions (or by returning
-    a state whose '__interrupt__' key is non-empty). We handle both patterns.
-    """
     config = {"configurable": {"thread_id": thread_id}}
 
     result = agent.invoke(
@@ -75,9 +62,6 @@ def run_with_interrupts(user_input: str, thread_id: str = "default") -> str:
             config=config,  # Must use the same config!
             version="v2",
         )
-
-        # Process final result
-    # print(result.value["messages"][-1].content)
 
     value = result.value
     if isinstance(value, str):
