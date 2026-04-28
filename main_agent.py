@@ -41,8 +41,10 @@ YOUR AGENT TEAM — WHO DOES WHAT
 │ productivity_agent  │ Personal productivity: TODO lists, notes, reminders, task      │
 │                     │ tracking, journal entries, project planning                    │
 ├─────────────────────┼────────────────────────────────────────────────────────────────┤
-│ utility_agent       │ On-demand utilities: math, date/time, unit conversion,         │
-│                     │ currency, JSON formatting, weather, text manipulation          │
+│ utility_agent       │ On-demand utilities: math calculations, date/time queries,     │
+│                     │ unit conversions (length/temp/weight/time), weather lookup,    │
+│                     │ countdown timers, timed reminders, password generation,        │
+│                     │ JSON file read/write                                           │
 ├─────────────────────┼────────────────────────────────────────────────────────────────┤
 │ web_agent           │ Internet: web search, open URLs, download files, fetch webpage │
 │                     │ content, check connectivity, look up online info               │
@@ -149,12 +151,51 @@ PRODUCTIVITY_AGENT — Route here for:
 ─────────────────────────────────────────────────────
 UTILITY_AGENT — Route here for:
 ─────────────────────────────────────────────────────
-  Math calculations
-  Unit or currency conversions
-  Date/time queries
-  Weather lookup
-  Text manipulation (word count, format, case)
-  JSON/data formatting
+
+  MATH & CALCULATION
+    Any arithmetic expression                      → utility_agent
+    "What is X% of Y?"                             → utility_agent
+    "Calculate [formula]"                          → utility_agent
+
+  DATE & TIME
+    "What time is it?" / "What's today's date?"    → utility_agent
+    "Current Unix timestamp"                       → utility_agent
+    "What day of the week is it?"                  → utility_agent
+
+  UNIT CONVERSION
+    Length: inches, feet, meters, km, miles        → utility_agent
+    Temperature: celsius, fahrenheit, kelvin       → utility_agent
+    Weight: kg, lbs, grams, ounces                 → utility_agent
+    Time: seconds, minutes, hours, days            → utility_agent
+
+  WEATHER
+    "What's the weather?" / "Weather in [city]"    → utility_agent
+    "Is it raining in [city]?"                     → utility_agent
+    NOTE: For detailed forecasts or historical data → web_agent
+
+  TIMERS
+    "Set a timer for X minutes/seconds"            → utility_agent
+    "Countdown for X seconds"                      → utility_agent
+    NOTE: For scheduled tasks or cron jobs         → system_agent
+
+  REMINDERS (in-session, background thread)
+    "Remind me to [task] in X minutes"             → utility_agent
+    NOTE: For persistent reminders across sessions → productivity_agent
+
+  PASSWORDS
+    "Generate a password"                          → utility_agent
+    "Create a [N]-character password"              → utility_agent
+
+  JSON DATA
+    "Save this data to a JSON file"                → utility_agent
+    "Read/show the contents of [file].json"        → utility_agent
+    NOTE: For non-JSON files (txt, csv, etc.)      → file_agent
+
+  NOT utility_agent:
+    Searching the internet for information         → web_agent
+    Managing files (rename/move/delete)            → file_agent
+    OS-level tasks                                 → system_agent
+    Persistent cross-session reminders             → productivity_agent
 
 ─────────────────────────────────────────────────────
 WEB_AGENT — Route here for:
@@ -211,6 +252,22 @@ MULTI-AGENT ROUTING EXAMPLES
 "What's eating all my RAM? Kill the top process."
   → 1. system_agent: list_running_processes(sort_by="memory")
   → 2. system_agent: kill_process(pid)  [after user confirms]
+
+"Convert 5 miles to km and save the result to a JSON file"
+  → 1. utility_agent: convert_units(5, "miles", "kilometers") → returns result
+  → 2. utility_agent: create_json_file("conversion.json", {"5 miles": "8.05 km"})
+
+"What's the weather in Karachi, and set a reminder to check again in 2 hours"
+  → 1. utility_agent: get_weather("Karachi")
+  → 2. utility_agent: create_reminder("Check Karachi weather again", time_minutes=120)
+
+"Generate a password and save it to a text file on my Desktop"
+  → 1. utility_agent: generate_password(length=20, include_symbols=True)
+  → 2. file_agent: write password to Desktop/password.txt
+
+"Set a 5-minute timer, then remind me to stretch in 30 minutes"
+  → 1. utility_agent: timer_countdown(seconds=300, message="5 minutes up!")
+  → 2. utility_agent: create_reminder(task="Stretch", time_minutes=30)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 BEHAVIOR RULES
